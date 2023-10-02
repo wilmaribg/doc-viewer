@@ -4,12 +4,16 @@
     :class="{ 'z-[100]': !viewerStore.isFullscreen }"
   >
     <Section>
-      <div class="Header-items grid">
-        <Avatar />
-        <Name />
-        <Rating />
-        <Versions />
-        <BtnOptions />
+      <div class="Header-row grid">
+        <div class="Header-items Header-items--agent grid">
+          <Avatar />
+          <Name />
+          <Rating />
+        </div>
+        <div class="Header-items Header-items--proposal grid">
+          <Versions />
+          <BtnOptions />
+        </div>
       </div>
     </Section>
   </div>
@@ -29,8 +33,24 @@ const viewerStore = useViewerStore()
 
 <style scoped lang="scss">
 .Header {
+  &-row {
+    grid-template-columns: 1fr 2fr;
+    @media (max-width: 1024px) {
+      grid-template-columns: 100%;
+    }
+  }
   &-items {
-    grid-template-columns: min-content min-content min-content auto min-content;
+    &--agent {
+      display: grid;
+      grid-template-columns: min-content min-content auto;
+      @media (max-width: 1024px) {
+        grid-template-columns: min-content auto min-content;
+      }
+    }
+    &--proposal {
+      display: grid;
+      grid-template-columns: auto min-content;
+    }
   }
 }
 </style>

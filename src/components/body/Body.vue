@@ -1,5 +1,5 @@
 <template>
-  <div :id="id" class="Body text-white mt-[60px]">
+  <div :id="id" class="Body text-white mb-[10px] mt-[100px] laptop:mt-[60px]">
     <Section>
       <template v-for="(frame, index) in viewerStore.frames" :key="frame.id">
         <Frame
@@ -37,7 +37,7 @@ const loadTemplate = async (keyname) => {
   }
 }
 
-const loadExitFullscreen = () => {
+const loadController = () => {
   const interval = setInterval(() => {
     if (!document.getElementById(id)) return
     document.body.addEventListener('keydown', (e) => {
@@ -56,7 +56,7 @@ const loadExitFullscreen = () => {
 }
 
 onMounted(async () => {
-  loadExitFullscreen()
+  loadController()
   await loadTemplate('example-editor3')
 })
 </script>

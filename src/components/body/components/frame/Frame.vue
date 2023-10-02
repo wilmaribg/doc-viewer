@@ -9,9 +9,12 @@
 </template>
 
 <script setup>
+import IsMobile from 'ismobilejs'
 import { isEmpty } from 'lodash'
 import { defineProps, onMounted, ref, watch } from 'vue'
 import { useViewerStore } from '../../../../stores/viewer'
+
+const isMobile = IsMobile(window.navigator).any
 
 const view = ref(null)
 const wrapper = ref(null)
@@ -23,21 +26,20 @@ const props = defineProps({
   frame: { type: Object, required: true }
 })
 
-const makeFullscreen = () => {
-  const widthBlock = props.frame.width
+const makeFullscreen = async () => {
   const widthScreen = window.innerWidth
 
   const heightBlock = props.frame.height
   const heightScreen = window.innerHeight
 
-  if (widthScreen > heightScreen) {
-    const width = heightScreen * (widthBlock / heightBlock)
+  view.value.style.height = 'max-content'
 
-    view.value.style.height = 'max-content'
-    view.value.style.transformOrigin = `50% 0.5%`
-    view.value.style.aspectRatio = `${width} / ${heightScreen}`
-    view.value.style.transform = `scale(${width / heightScreen - 0.0899})`
+  if (widthScreen > heightScreen && !isMobile) {
+    view.value.style.margin = 'inherit'
+    view.value.style.transformOrigin = '50% 0'
+    view.value.style.transform = `scale(${heightScreen / heightBlock})`
   }
+  await resize()
 }
 
 const getBlocks = () => {
@@ -61,10 +63,31 @@ const content = () => {
   return element
 }
 
-const mountIFrame = () => {
+const resize = () => {
+  return new Promise((resolve) => {
+    if (!isMobile) return resolve()
+    const interval = setInterval(() => {
+      const body = view.value?.contentWindow?.document?.body
+      if (!body) return
+      body.style.overflow = 'hidden'
+      body.style.transformOrigin = '0 0'
+      if (view.value.scrollHeight > window.innerHeight && viewerStore.isFullscreen) {
+        body.style.marginLeft = '50%'
+        body.style.transform = `scale(${window.innerHeight / props.frame.height}) translateX(-50%)`
+      } else {
+        body.style.transform = `scale(${view.value.scrollWidth / props.frame.width})`
+      }
+      resolve()
+      clearInterval(interval)
+    }, 100)
+  })
+}
+
+const mountIFrame = async () => {
   view.value = document.createElement('iframe')
 
   view.value.frameborder = '0'
+  view.value.style.margin = 'auto'
   view.value.allowfullscreen = true
   view.value.width = props.frame.width
   view.value.allow = 'autoplay; fullscreen; picture-in-picture'
@@ -74,14 +97,16 @@ const mountIFrame = () => {
   meta.name = 'viewport'
   meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
 
-  view.value.appendChild(meta)
   wrapper.value.appendChild(view.value)
 
   view.value.contentWindow.document.body.style.margin = 'auto'
   view.value.contentWindow.document.body.style.width = `${props.frame.width}px`
   view.value.contentWindow.document.body.style.height = `${props.frame.height}px`
 
+  view.value.contentWindow.document.head.appendChild(meta)
   view.value.contentWindow.document.body.appendChild(content())
+
+  await resize()
 }
 
 const start = () => {
@@ -98,17 +123,20 @@ const start = () => {
 
 watch(
   () => viewerStore.isFullscreen,
-  (value) => {
+  async (value) => {
     if (value) return makeFullscreen()
     view.value.style.transform = `scale(1)`
     view.value.style.transformOrigin = `initial`
     view.value.style.aspectRatio = `${props.frame.width} / ${props.frame.height}`
+    view.value.contentWindow.document.body.style.margin = 'auto'
+    await resize()
   }
 )
 
 onMounted(() => {
   console.log('roge props.frame ---->', props.frame)
   start()
+  window.addEventListener('resize', resize)
 })
 </script>
 
@@ -121,6 +149,7 @@ onMounted(() => {
     bottom: 0;
     position: fixed;
     overflow: hidden;
+    // align-items: center;
     background: rgb(30, 30, 30);
   }
 }

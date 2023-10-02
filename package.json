@@ -13,6 +13,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "ismobilejs": "^1.1.1",
     "lodash": "^4.17.21",
     "pinia": "^2.1.6",
     "uniqid": "^5.4.0",
