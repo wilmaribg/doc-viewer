@@ -9,9 +9,11 @@
 </template>
 
 <script setup>
-import IsMobile from 'ismobilejs'
 import { isEmpty } from 'lodash'
+import IsMobile from 'ismobilejs'
+import ZingTouch from 'zingtouch'
 import { defineProps, onMounted, ref, watch } from 'vue'
+
 import { useViewerStore } from '../../../../stores/viewer'
 
 const isMobile = IsMobile(window.navigator).any
@@ -28,7 +30,6 @@ const props = defineProps({
 
 const makeFullscreen = async () => {
   const widthScreen = window.innerWidth
-
   const heightBlock = props.frame.height
   const heightScreen = window.innerHeight
 
@@ -38,8 +39,9 @@ const makeFullscreen = async () => {
     view.value.style.margin = 'inherit'
     view.value.style.transformOrigin = '50% 0'
     view.value.style.transform = `scale(${heightScreen / heightBlock})`
+  } else {
+    await resize()
   }
-  await resize()
 }
 
 const getBlocks = () => {
@@ -109,6 +111,27 @@ const mountIFrame = async () => {
   await resize()
 }
 
+const makeSwippable = async () => {
+  const body = view.value.contentWindow.document.body
+  if (!body) return
+
+  const region = new ZingTouch.Region(body)
+
+  region.bind(body, 'swipe', function (e) {
+    console.log(e.detail)
+  })
+
+  // const hammer = new Hammer(body)
+  // console.log('roge Hammer ---->', hammer)
+  // hammer.on('swipe', (e) => {
+  //   alert('swipe')
+  // })
+  // hammer.on('pan', (e) => {
+  //   console.log('roge e ---->', e)
+  //   alert('swipe')
+  // })
+}
+
 const start = () => {
   const interval = setInterval(() => {
     if (wrapper.value) {
@@ -124,7 +147,11 @@ const start = () => {
 watch(
   () => viewerStore.isFullscreen,
   async (value) => {
-    if (value) return makeFullscreen()
+    if (value) {
+      makeSwippable()
+      makeFullscreen()
+      return
+    }
     view.value.style.transform = `scale(1)`
     view.value.style.transformOrigin = `initial`
     view.value.style.aspectRatio = `${props.frame.width} / ${props.frame.height}`

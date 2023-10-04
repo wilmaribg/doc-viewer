@@ -1,5 +1,5 @@
 <template>
-  <div class="Rating h-[32pt] flex flex-col justify-center">
+  <div class="Rating h-full flex flex-col justify-center">
     <div class="Rating-stars pl-[12pt] pr-[16pt]">
       <div class="flex flex-row items-center gap-2">
         <div class="flex gap-x-1">

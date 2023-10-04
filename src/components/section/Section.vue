@@ -1,5 +1,5 @@
 <template>
-  <div class="Section container mx-auto">
+  <div class="Section laptop:container mx-auto">
     <slot></slot>
   </div>
 </template>

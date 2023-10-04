@@ -4,8 +4,8 @@
       <template v-for="(frame, index) in viewerStore.frames" :key="frame.id">
         <Frame
           v-if="viewerStore.isFullscreen ? viewerStore.currentIndex == index : true"
-          :frame="frame"
           :index="index"
+          :frame="frame"
         />
       </template>
     </Section>
@@ -15,6 +15,7 @@
 <script setup>
 import uniqid from 'uniqid'
 import { inject, onMounted } from 'vue'
+
 import Section from '../section/Section.vue'
 import Frame from './components/frame/Frame.vue'
 import { useViewerStore } from '../../stores/viewer'
